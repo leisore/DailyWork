@@ -1,3 +1,14 @@
 1. client application:  客户端
 2. classic API：经典API
 3. simplified API：简化API
+4. point-to-point/PTP：点对点
+5. pub-sub：发布/订阅
+6. JMS provider：JMS提供商
+7. In the domain-specific API for point-to-point messaging：在点对点消息域的API中
+8. In the domain-specific API for pub/sub messaging：发布/订阅消息域的API中
+9. JMS server：JMS服务器
+10. normal:普通
+11. Quality of service：服务质量
+12. message delivery：消息传递
+13. delivery mode：转发模式
+14. delivery delay：传递延迟

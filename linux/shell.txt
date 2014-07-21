@@ -79,4 +79,5 @@
 12. sed:
     12.1 substitute: lee-->eel
         sed s/lee/eel/g 1.txt
-    
+13. cal:
+        display calendar.

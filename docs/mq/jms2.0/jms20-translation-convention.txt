@@ -13,3 +13,4 @@
 13. delivery mode：转发模式
 14. delivery delay：投递延迟
 15. expiration time:过期时间
+16. administered object:受管对象

@@ -81,3 +81,9 @@
         sed s/lee/eel/g 1.txt
 13. cal:
         display calendar.
+14. show scoket attr:
+        /proc/sys/net/ipv4/tcp_rmem (for read) and /proc/sys/net/ipv4/tcp_wmem (for write)
+        they contain three numbers, which are minimum, default and maximum memory size values (in byte), respectively.
+15. net band-width:
+    server: iperf -s -i 5 -f M
+    client: iperf -t 30 -i 5 -c 192.168.0.57 -f M

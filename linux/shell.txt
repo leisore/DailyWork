@@ -84,6 +84,13 @@
 14. show scoket attr:
         /proc/sys/net/ipv4/tcp_rmem (for read) and /proc/sys/net/ipv4/tcp_wmem (for write)
         they contain three numbers, which are minimum, default and maximum memory size values (in byte), respectively.
-15. net band-width:
+15. test net band-width/speed:
     server: iperf -s -i 5 -f M
     client: iperf -t 30 -i 5 -c 192.168.0.57 -f M
+16. traffic control:
+    show qdisc: 
+        tc -s qdisc ls dev eth0
+    reset tc set:
+        tc qdisc del dev eth0 root
+    set delay and loss:
+        tc qdisc add dev eth0 root handle 1:0 netem delay 0ms loss 2%

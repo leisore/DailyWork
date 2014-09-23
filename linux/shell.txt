@@ -94,3 +94,6 @@
         tc qdisc del dev eth0 root
     set delay and loss:
         tc qdisc add dev eth0 root handle 1:0 netem delay 0ms loss 2%
+17. split:
+        var1=`echo $lee | cut -d ':' -f 1`
+        var2=`echo $lee | cut -d ':' -f 2`

@@ -97,3 +97,10 @@
 17. split:
         var1=`echo $lee | cut -d ':' -f 1`
         var2=`echo $lee | cut -d ':' -f 2`
+18. shell中的引号：
+    单引号中的内容不会做替换,双引号中的内容会做替换:
+        lee=eel
+        echo '$lee'
+            out: $lee
+        echo $lee"
+            out: eel

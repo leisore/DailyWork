@@ -55,6 +55,8 @@
         do
             echo $count
             count=`expr ${count} + 1`
+            或者
+            count=$((count+1))
         done
 10. case:
     case $1 in
@@ -104,3 +106,16 @@
             out: $lee
         echo $lee"
             out: eel
+19. 进度条：
+    function wait_seconds() {
+        waitSec=$1
+        sleepMills=$((waitSec*1000/100))
+        count=$((waitSec*1000/sleepMills))
+        cnt=1
+        while [ $cnt -le $count]
+        do
+            usleep $((sleepMills*1000))
+            echo -en "\rprogress:[$((cnt*100/count))]"
+            cnt=$((cnt+1))
+        done
+    }

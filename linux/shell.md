@@ -131,4 +131,12 @@
     Tasks: 即为线程总数
     CPU/Mem: 即为单个线程占用的CPU和内存
 
+#### 随机启动
+    /etc/rc.d/rc.local
 ##### TODO
+
+#### Git
+##### 同步
+    git remote add amq-upstream https://github.com/apache/activemq.git
+    git pull amq-upstream trunk
+    git push

@@ -1,4 +1,4 @@
-name: cf-bes
+name: cf-scu
 director_uuid: 25c8ffa7-c831-44e0-91bd-c7c673828f84
 
 releases:
@@ -359,10 +359,10 @@ properties:
   ssl:
     skip_cert_verify: false
   support_address: http://support.192.168.1.145.xip.io
-  description: Cloud Foundry sponsored by BES
+  description: Cloud Foundry sponsored by scu
   domain: 192.168.1.145.xip.io  
   system_domain: 192.168.1.145.xip.io
-  system_domain_organization: bessys
+  system_domain_organization: scusys
   app_domains: 
     - 192.168.1.145.xip.io  
   cc: &cc
@@ -418,7 +418,7 @@ properties:
         total_services: 100        
         trial_db_allowed: true          
     srv_api_uri: http://api.192.168.1.145.xip.io
-    internal_api_user: bes
+    internal_api_user: scu
     internal_api_password: password
     external_host: api
     external_protocol: http    
@@ -528,7 +528,7 @@ properties:
   vcenter:
     address: 192.168.1.58
     user: administrator@vsphere.local
-    password: Bes@2015
+    password: scu@2015
     datacenters:
       - name: datacenter
         vm_folder: vm_folder

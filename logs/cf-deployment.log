@@ -1,0 +1,541 @@
+name: cf-bes
+director_uuid: 25c8ffa7-c831-44e0-91bd-c7c673828f84
+
+releases:
+- name: cf
+  version: 213
+
+meta:
+  stemcell:
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent  
+    version: 3022
+    
+compilation:
+  workers: 6
+  network: default
+  reuse_compilation_vms: true
+  cloud_properties:
+    ram: 2048
+    disk: 8192
+    cpu: 2
+
+update:
+  canaries: 5
+  canary_watch_time: 30000-1200000
+  update_watch_time: 5000-1200000  
+  max_in_flight: 20
+  max_errors: 2 
+    
+networks:
+  - name: default
+    subnets:
+    - reserved:
+      - 192.168.1.1
+      - 192.168.1.3 - 192.168.1.100
+      - 192.168.1.131 - 192.168.1.140
+      static:  
+      - 192.168.1.141 - 192.168.1.160
+      range: 192.168.1.0/24
+      gateway: 192.168.1.2
+      dns:  
+      - 192.168.1.2
+      cloud_properties:
+        name: "dvPortGroup"
+      
+resource_pools:  
+  - name: small  
+    network: default  
+    size: 7  
+    stemcell:  
+      name: bosh-vsphere-esxi-ubuntu-trusty-go_agent  
+      version: 3022  
+    cloud_properties:  
+      ram: 2048  
+      disk: 4096  
+      cpu: 1   
+  - name: big  
+    network: default  
+    size: 3  
+    stemcell:  
+      name: bosh-vsphere-esxi-ubuntu-trusty-go_agent  
+      version: 3022  
+    cloud_properties:  
+      ram: 4096  
+      disk: 20480  
+      cpu: 2 
+
+jobs:
+
+  #- name: haproxy
+  #  templates: 
+  #    - name: haproxy
+  #      release: cf
+  #    - name: consul_agent
+  #      release: cf             
+  #  instances: 1
+  #  resource_pool: small
+  #  persistent_disk: 0
+  #  networks:
+  #  - name: default
+  #    static_ips:
+  #    - 192.168.1.141  
+
+  - name: nats
+    templates: 
+      - name: nats
+        release: cf
+    instances: 1
+    resource_pool: small
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.142 
+      
+  - name: etcd
+    templates: 
+      - name: etcd
+        release: cf
+      #- name: consul_agent
+      #  release: cf        
+    instances: 1
+    resource_pool: small
+    persistent_disk: 1024
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.143
+    #properties:
+    #  consul:
+    #    agent:
+    #      mode: server      
+      
+  - name: loggregator_trafficcontroller
+    templates: 
+      - name: loggregator_trafficcontroller
+        release: cf
+    instances: 1
+    resource_pool: small
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.144
+      
+  - name: router
+    templates: 
+      - name: gorouter
+        release: cf
+    instances: 1
+    resource_pool: small
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.145
+      
+  - name: uaa
+    templates: 
+      - name: uaa
+        release: cf
+      - name: login
+        release: cf
+      - name: postgres
+        release: cf        
+    instances: 1
+    resource_pool: small
+    persistent_disk: 8192
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.146
+  
+  - name: cc
+    templates: 
+      - name: cloud_controller_ng
+        release: cf
+      - name: cloud_controller_clock
+        release: cf
+      - name: cloud_controller_worker
+        release: cf      
+    instances: 1
+    resource_pool: big
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.147   
+      
+  - name: dea
+    templates: 
+      - name: dea_next
+        release: cf
+    instances: 2
+    resource_pool: big
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.148
+      - 192.168.1.149
+      
+  - name: hm
+    templates: 
+      - name: hm9000
+        release: cf
+    instances: 1
+    resource_pool: small
+    persistent_disk: 0
+    networks:
+    - name: default
+      static_ips:
+      - 192.168.1.150
+
+properties:
+  ## haproxy
+  #ha_proxy:
+  #  disable_http: false
+  #  ssl_pem: '-----BEGIN RSA PRIVATE KEY-----
+  #    MIIEowIBAAKCAQEA5rIBa06qZzZ4CQoIFO2iQUvXe1RhGW30YDM6utJysDmhstdo
+  #    +WqVHe1soTLcj0FRbT+yo4VyqLm5wfHv07KqccLMif/xhc1HRButJKu4Hg2sSNZP
+  #    pwGHn+FIE9dO8+67s2M5jZocsOXBIudYPhAbTkoBgX9h7YKnpdOY8y6gk8n107Bb
+  #    qSOlYzcRWm/1uoDP2cw3DK2+1agX7UAqoUqb1i2nlvTCFOiB2BBtBNAjSb77Te36
+  #    I/2GSO8RNCdXIo8mdwDCK+9E8bmNO23hH4IrCRKnc6nRTDMhNAUq9xHd4BixQHJW
+  #    ASrGe4QdSQKXhkMDox9jINakynfBHU79bv04AwIDAQABAoIBAAJ/zzAgbAwuNOK0
+  #    Lx467NUUQ0NcyKiD3m/kXjCD8yYhmbTcTJDXLMJkPhcI/Aa5SG6MkBzhZzqYuIB3
+  #    ZIfAmcQdviWIlk9CyBDe0+Nf0ODSeRlY6QgAJj3/LM66OGrAHVx2KLt1/fWUp6D/
+  #    LJ+PgRw6BQYoISF3luVfA3su+CJhunkKTzZy+e8dO9b2eJOVvTa4c1LQN40rzKf1
+  #    YWb0knYXDyNS1JyGmyb+yrsrtHe5AOyqCNhdneiArKCrpFSo9GW6IZ2z5koXyDYX
+  #    Zbx3aI0r/QSBl0hNzWUsj/iuuaL7/gVVupkrlj9NQIGINl5q6UQTsrS+aTfKwnaR
+  #    CKgXzeECgYEA/KzEUTXOCy98+J+gc/mPFDUK8O5uYdq89izTA62XeQsR5GC8X2zH
+  #    fmFcj1ROQbU/reDFLwV+ce+KU0H3YpFFtYvp1d33zcQ3LWENWXhZmAVkg/5xp1rO
+  #    3eaz9efAsvJV3MFpw5eKw+KomIaZwEjKNX6ANhUKf6s2RFcBlF/tPYkCgYEA6bsx
+  #    LYMhiwaYlLFS6wSdy1e3KYncb/M4Ws7V8jBInpajnNqmBSRx5VHx+0Tm+CQxL/rg
+  #    IvPIiSDvgwzFlrZSbzrxqUyy9hlKvOyL3BLqMLtfd6bB+apUgbAgeo9tLTJm4nCz
+  #    gMgGnsLdB7jGn3x4Mr6YZ0xLzFms1+EqWvN+UisCgYBlAk/swxyeXhqQbYfANRic
+  #    lGPOUxKvbbkylFK62q9+BQ3fBUjowNyzSgqthZ9PJzzQrtVE6eZVd9QNWoah0b9T
+  #    Rx5wj66bhIAmVPD4PmNaoXVASvx2UZf3H137xOzE3Jm0iWFVfoRLsJWDe/OE6dRk
+  #    NDDe7eRnizNDeKC6BusZOQKBgDhfxQHEMg/1PFII3wX+bAzCkFP9g2ShFkOYxbOP
+  #    f8R4cuf/OLHe03XLKQFA4jCRkiePbAYiJIkmn35NU08BlKptXiJGdJe1C/i7WRRw
+  #    n3m3h9Q1LW4Jbi6Fi5/j/iI7mOMe6byzAh3CxEr7fzSycc9TdzDbDyEvs+ex0GR1
+  #    fE9XAoGBAJFrhCuNhOVuHd+K8uZfkbu+q3s7pGK5330/1CQpZWCqgCfVYPhkHGV1
+  #    j3/8MVrXrWMCy8KJ1yJziCMqSgWoutmY5FdP3EM8jcn6hqWC9rBOWHWCXmnVbyME
+  #    6cpYHE6ex+s9atixEDKVu/kFrXBGyJk7gUh2wcPuQ+b91zyWzbfM
+  #    -----END RSA PRIVATE KEY-----'
+
+  ## router
+  router:
+    port: 80
+    status:
+      port: 8080
+      user: router
+      password: admin   
+    enable_ssl: false
+    servers:
+      z1:
+        - 192.168.1.145 
+      z2:
+        - 192.168.1.145
+
+  ## uaa
+  uaa:
+    admin: 
+      client_secret: admin
+    catalina_opts: -Xmx256m -XX:MaxPermSize=64m
+    client: 
+      autoapprove:  
+        - cf
+        - admin
+        - admin_ui
+        - admin_ui.user
+    cc: 
+      client_secret: admin
+      token_secret: admin
+    jwt:  
+      signing_key: '-----BEGIN RSA PRIVATE KEY-----
+        MIICXAIBAAKBgQDHFr+KICms+tuT1OXJwhCUmR2dKVy7psa8xzElSyzqx7oJyfJ1
+        JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMXqHxf+ZH9BL1gk9Y6kCnbM5R6   
+        0gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBugspULZVNRxq7veq/fzwIDAQAB
+        AoGBAJ8dRTQFhIllbHx4GLbpTQsWXJ6w4hZvskJKCLM/o8R4n+0W45pQ1xEiYKdA
+        Z/DRcnjltylRImBD8XuLL8iYOQSZXNMb1h3g5/UGbUXLmCgQLOUUlnYt34QOQm+0
+        KvUqfMSFBbKMsYBAoQmNdTHBaz3dZa8ON9hh/f5TT8u0OWNRAkEA5opzsIXv+52J
+        duc1VGyX3SwlxiE2dStW8wZqGiuLH142n6MKnkLU4ctNLiclw6BZePXFZYIK+AkE
+        xQ+k16je5QJBAN0TIKMPWIbbHVr5rkdUqOyezlFFWYOwnMmw/BKa1d3zp54VP/P8
+        +5aQ2d4sMoKEOfdWH7UqMe3FszfYFvSu5KMCQFMYeFaaEEP7Jn8rGzfQ5HQd44ek
+        lQJqmq6CE2BXbY/i34FuvPcKU70HEEygY6Y9d8J3o6zQ0K9SYNu+pcXt4lkCQA3h
+        jJQQe5uEGJTExqed7jllQ0khFJzLMx0K6tj0NeeIzAaGCQz13oo2sCdeGRHO4aDh
+        HH6Qlq/6UOV5wP8+GAcCQFgRCcB+hrje8hfEEefHcFpyKH+5g1Eu1k0mLrxK2zd+
+        4SlotYRHgPCEubokb2S1zfZDWIXW3HmggnGgM949TlY=  
+        -----END RSA PRIVATE KEY-----'
+      verification_key: '-----BEGIN PUBLIC KEY-----
+        MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHFr+KICms+tuT1OXJwhCUmR2d
+        KVy7psa8xzElSyzqx7oJyfJ1JZyOzToj9T5SfTIq396agbHJWVfYphNahvZ/7uMX
+        qHxf+ZH9BL1gk9Y6kCnbM5R60gfwjyW1/dQPjOzn9N394zd2FJoFHwdq9Qs0wBug
+        spULZVNRxq7veq/fzwIDAQAB
+        -----END PUBLIC KEY-----'
+    port: 8080
+    no_ssl: true
+    url: http://uaa.192.168.1.145.xip.io         
+    clients:
+      cf:
+        id: cf
+        override: true
+        authorized-grant-types: implicit,password,refresh_token
+        scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write
+        authorities: uaa.none
+        access-token-validity: 600
+        refresh-token-validity: 2592000             
+      app-direct:
+        secret: admin
+      cloud_controller_username_lookup:
+        authorities: scim.userids
+        authorized-grant-types: client_credentials
+        client: admin
+        secret: admin
+      developer_console:
+        secret: admin
+      doppler:
+        authorities: uaa.resource
+        override: true
+        secret: admin
+      gorouter:
+        authorities: clients.read,clients.write,clients.admin,route.admin,route.advertise
+        authorized-grant-types: client_credentials,refresh_token
+        scope: openid,cloud_controller_service_permissions.read
+        secret: admin
+      login:
+        secret: admin      
+        authorities: oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write
+        authorized-grant-types: authorization_code,client_credentials,refresh_token
+        override: true
+        redirect-uri: http://login.192.168.1.145.xip.io
+        scope: openid,oauth.approvals
+      notifications:
+        authorities: cloud_controller.admin,scim.read
+        authorized-grant-types: client_credentials
+        secret: admin
+    scim:
+      users:
+      - admin|admin|scim.write,scim.read,openid,cloud_controller.admin,doppler.firehose
+    databases:
+      address: 192.168.1.146
+      databases: uaadb
+      db_scheme: postgres
+      port: 5524
+      roles:
+      - name: uaaadmin
+        password: admin
+        tag: admin      
+
+  ## login
+  login:
+    protocol: http
+    url: http://login.192.168.1.145.xip.io
+    catalina_opts: -Xmx256m -XX:MaxPermSize=64m     
+    links:
+      home: http://console.192.168.1.145.xip.io
+      passwd: http://console.192.168.1.145.xip.io/password_resets/new
+      signup: http://console.192.168.1.145.xip.io/register
+      network: http://network.192.168.1.145.xip.io/login      
+      signup-network: http://network.192.168.1.145.xip.io/registrations/new
+    port: 9090
+    enabled: true
+  
+  ## uaadb              
+  uaadb:
+    address: 192.168.1.146
+    databases:
+    - citext: true
+      name: uaadb
+      tag: uaa
+    db_scheme: postgresql
+    port: 5524
+    roles:
+    - name: uaaadmin
+      password: admin
+      tag: admin          
+    
+  ## cloud_controller_ng
+  ssl:
+    skip_cert_verify: false
+  support_address: http://support.192.168.1.145.xip.io
+  description: Cloud Foundry sponsored by BES
+  domain: 192.168.1.145.xip.io  
+  system_domain: 192.168.1.145.xip.io
+  system_domain_organization: bessys
+  app_domains: 
+    - 192.168.1.145.xip.io  
+  cc: &cc
+    bulk_api_user: "bulk_api" 
+    bulk_api_password: admin
+    staging_upload_user: uploaduser
+    staging_upload_password: admin
+    security_group_definitions: 
+    - name: public_networks
+      rules:
+      - destination: 192.168.0.0-255.255.255.255
+        protocol: all
+    - name: dns
+      rules:
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: tcp
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: udp
+    default_running_security_groups:
+    - public_networks
+    - dns    
+    default_staging_security_groups:
+    - public_networks
+    - dns    
+    packages:
+      app_package_directory_key: cc-packages    
+    droplets:
+      droplet_directory_key: cc-droplets
+    buildpacks:
+      buildpack_directory_key: cc-buildpacks          
+    db_encryption_key: admin
+    default_app_memory: 512
+    install_buildpacks:
+      - name: staticfile_buildpack
+        package: buildpack_staticfile
+      - name: java_buildpack
+        package: buildpack_java
+      - name: ruby_buildpack
+        package: buildpack_ruby
+      - name: nodejs_buildpack
+        package: buildpack_nodejs
+      - name: go_buildpack
+        package: buildpack_go
+      - name: binary_buildpack
+        package: buildpack_binary
+    quota_definitions: 
+      default:
+        memory_limit: 1024   
+        non_basic_services_allowed: true  
+        total_routes: 1000
+        total_services: 100        
+        trial_db_allowed: true          
+    srv_api_uri: http://api.192.168.1.145.xip.io
+    internal_api_user: bes
+    internal_api_password: password
+    external_host: api
+    external_protocol: http    
+    databases:
+      address: 192.168.1.147
+      databases: ccdb
+      db_scheme: postgres
+      port: 5524
+      roles:
+      - name: ccadmin
+        password: admin
+        tag: admin           
+  ccng: *cc
+
+  ## ccdb            
+  ccdb: &ccdb
+    databases:
+    - citext: true
+      name: ccdb
+      tag: cc
+    roles:
+    - name: ccadmin
+      password: admin
+      tag: admin        
+    db_scheme: postgres
+    address: 192.168.1.146
+    port: 5524
+    
+  ccdb_ng: *ccdb
+
+  ## hm
+  hm9000:
+    url: http://hm9000.192.168.1.145.xip.io
+    
+  ## dea
+  dea_next:
+    memory_mb: 4096
+    staging_memory_limit_mb: 256
+    directory_server_protocol: http
+    heartbeat_interval_in_seconds: 30   
+
+  etcd:
+    heartbeat_interval_in_milliseconds: 1000
+    election_timeout_in_milliseconds: 5000
+    machines:
+      - 192.168.1.143    
+  
+  ## doppler
+  doppler:
+    enabled: false    
+    
+  ## nats
+  nats:
+    address: 192.168.1.142
+    port: 4222    
+    user: nats
+    password: admin
+    use_gnatsd: true    
+    machines:
+      - 192.168.1.142
+        
+  ## loggregator         
+  loggregator:
+    maxRetainedLogMessages: 100
+    servers:
+      default:
+        - 192.168.1.144
+  loggregator_endpoint:
+    host: 192.168.1.144
+    shared_secret: admin
+  traffic_controller:
+    zone: 192.168.1.145.xip.io
+    
+  databases:
+    address: 192.168.1.146
+    databases:
+    - citext: true
+      name: ccdb
+      tag: cc
+    - citext: true
+      name: uaadb
+      tag: uaa
+    db_scheme: postgres
+    port: 5524
+    roles:
+    - name: ccadmin
+      password: admin
+      tag: admin
+    - name: uaaadmin
+      password: admin
+      tag: admin      
+      
+  #consul:
+  #  agent:
+  #    datacenter: datacenter
+  #    servers:
+  #      lan:
+  #      - 192.168.1.143            
+
+  networks:
+    apps: default
+    management: default
+
+  ntp:
+    - 192.168.1.32
+
+  vcenter:
+    address: 192.168.1.58
+    user: administrator@vsphere.local
+    password: Bes@2015
+    datacenters:
+      - name: datacenter
+        vm_folder: vm_folder
+        template_folder: template_folder
+        datastore_pattern: datastore
+        disk_path: cf_folder
+        persistent_datastore_pattern: datastore
+        allow_mixed_datastores: true
+        clusters:
+          - cluster 

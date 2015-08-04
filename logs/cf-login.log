@@ -1,0 +1,193 @@
+boshcli@boshcli:~/cf-deployment$ cf login -a http://api.192.168.1.145.xip.io 
+API endpoint: http://api.192.168.1.145.xip.io
+
+REQUEST: [2015-08-04T11:35:21+08:00]
+GET /v2/info HTTP/1.1
+Host: api.192.168.1.145.xip.io
+Accept: application/json
+Content-Type: application/json
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+
+
+RESPONSE: [2015-08-04T11:35:25+08:00]
+HTTP/1.1 200 OK
+Content-Length: 417
+Content-Type: application/json;charset=utf-8
+Date: Tue, 04 Aug 2015 03:35:25 GMT
+Server: nginx
+X-Cf-Requestid: 692da18d-4999-44a9-6c85-504159848b27
+X-Content-Type-Options: nosniff
+X-Vcap-Request-Id: 42c97a81-a45e-4684-7964-ae73a98b11aa::930eb5df-75c0-4f45-9fb5-6e6d2580ce53
+
+{"name":"vcap","build":"2222","support":"http://support.192.168.1.145.xip.io","version":2,"description":"Cloud Foundry sponsored by BES","authorization_endpoint":"http://login.192.168.1.145.xip.io","token_endpoint":"http://uaa.192.168.1.145.xip.io","min_cli_version":null,"min_recommended_cli_version":null,"api_version":"2.33.0","app_ssh_endpoint":"ssh.192.168.1.145.xip.io:2222","app_ssh_host_key_fingerprint":null}
+Warning: Insecure http API endpoint detected: secure https API endpoints are recommended
+
+
+REQUEST: [2015-08-04T11:35:25+08:00]
+GET /login HTTP/1.1
+Host: login.192.168.1.145.xip.io
+Accept: application/json
+Content-Type: application/json
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+
+
+RESPONSE: [2015-08-04T11:35:27+08:00]
+HTTP/1.1 200 OK
+Content-Length: 683
+Cache-Control: no-cache
+Cache-Control: no-store
+Cache-Control: no-cache, no-store, max-age=0
+Content-Language: en-US
+Content-Type: application/json;charset=UTF-8
+Date: Tue, 04 Aug 2015 03:35:27 GMT
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Pragma: no-cache
+Pragma: no-cache
+Server: Apache-Coyote/1.1
+X-Cf-Requestid: e2c6cedc-c59e-4b7e-51ea-14c839ca460a
+X-Frame-Options: DENY
+
+{"timestamp":"2015-01-23T22:44:14+0000","app":{"version":"1.14"},"idpDefinitions":[],"commit_id":"c4e3209","prompts":{"username":["text","Email"],"password":["password","Password"],"passcode":["password","One Time Code (Get one at http://login.192.168.1.145.xip.io/passcode)"]},"forgotPasswordLink":"http://console.192.168.1.145.xip.io/password_resets/new","createAccountLink":"http://console.192.168.1.145.xip.io/register","links":{"register":"http://console.192.168.1.145.xip.io/register","passwd":"http://console.192.168.1.145.xip.io/password_resets/new","login":"http://login.192.168.1.145.xip.io","uaa":"http://uaa.192.168.1.145.xip.io"},"entityID":"login.192.168.1.145.xip.io"}
+
+Email> admin
+
+Password> 
+Authenticating...
+
+REQUEST: [2015-08-04T11:35:31+08:00]
+POST /oauth/token HTTP/1.1
+Host: login.192.168.1.145.xip.io
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Content-Type: application/x-www-form-urlencoded
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+grant_type=password&password=[PRIVATE DATA HIDDEN]&scope=&username=admin
+
+RESPONSE: [2015-08-04T11:35:31+08:00]
+HTTP/1.1 200 OK
+Transfer-Encoding: chunked
+Access-Control-Allow-Origin: *
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Cache-Control: no-store
+Content-Type: application/json;charset=UTF-8
+Date: Tue, 04 Aug 2015 03:35:31 GMT
+Expires: 0
+Pragma: no-cache
+Pragma: no-cache
+Server: Apache-Coyote/1.1
+X-Cf-Requestid: 90621400-4e07-40fd-7ae6-c1aa61c05ad4
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+811
+{"access_token":"[PRIVATE DATA HIDDEN]","token_type":"bearer","refresh_token":"[PRIVATE DATA HIDDEN]","expires_in":599,"scope":"scim.read cloud_controller.admin scim.write cloud_controller.write password.write openid cloud_controller.read","jti":"ed8f3223-2aed-472e-a7ef-0acbea9267ae"}
+0
+
+
+OK
+
+
+REQUEST: [2015-08-04T11:35:31+08:00]
+GET /v2/organizations HTTP/1.1
+Host: api.192.168.1.145.xip.io
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Content-Type: application/json
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+
+
+RESPONSE: [2015-08-04T11:35:32+08:00]
+HTTP/1.1 401 Unauthorized
+Content-Length: 97
+Content-Type: application/json;charset=utf-8
+Date: Tue, 04 Aug 2015 03:35:32 GMT
+Server: nginx
+X-Cf-Requestid: a021f965-5186-4153-4229-615a408c7575
+X-Content-Type-Options: nosniff
+X-Vcap-Request-Id: 40347137-8216-44e9-6b82-4b0700de6a65::1f86d607-fe04-4ac0-b0df-4f4865b13def
+
+{
+  "code": 1000,
+  "description": "Invalid Auth Token",
+  "error_code": "CF-InvalidAuthToken"
+}
+
+
+REQUEST: [2015-08-04T11:35:32+08:00]
+POST /oauth/token HTTP/1.1
+Host: login.192.168.1.145.xip.io
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Content-Type: application/x-www-form-urlencoded
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+grant_type=refresh_token&refresh_token=eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiIzZDIxNWYxNC1kYjMxLTRjYjYtYjI0MC1mZWFkZTNhMTVjZDEiLCJzdWIiOiIyNjI2MDYzNC0wODM5LTRiZTEtYTdiMS1jNDE0N2Y1MGI2MDMiLCJzY29wZSI6WyJzY2ltLnJlYWQiLCJjbG91ZF9jb250cm9sbGVyLmFkbWluIiwic2NpbS53cml0ZSIsImNsb3VkX2NvbnRyb2xsZXIud3JpdGUiLCJwYXNzd29yZC53cml0ZSIsIm9wZW5pZCIsImNsb3VkX2NvbnRyb2xsZXIucmVhZCJdLCJpYXQiOjE0Mzg2NTkzMzEsImV4cCI6MTQ0MTI1MTMzMSwiY2lkIjoiY2YiLCJjbGllbnRfaWQiOiJjZiIsImlzcyI6Imh0dHA6Ly91YWEuMTkyLjE2OC4xLjE0NS54aXAuaW8vb2F1dGgvdG9rZW4iLCJ6aWQiOiJ1YWEiLCJncmFudF90eXBlIjoicGFzc3dvcmQiLCJ1c2VyX25hbWUiOiJhZG1pbiIsInVzZXJfaWQiOiIyNjI2MDYzNC0wODM5LTRiZTEtYTdiMS1jNDE0N2Y1MGI2MDMiLCJyZXZfc2lnIjoiY2RkZDk0YzIiLCJhdWQiOlsiY2YiLCJzY2ltIiwiY2xvdWRfY29udHJvbGxlciIsInBhc3N3b3JkIiwib3BlbmlkIl19.AZwu4MGBvu9qc_hqinF7QiszAfWTdjWCgTusxByKaAO-A88ukewiyHswZGdsDpqnzln4SvpiXAF29tT4saHK8e_8W5VNE51dzugu-ahZWR1HM2OUa7mO-fyS63xbOlNtxVKkUY2UF-DzvFEAw5jLq2tptIsVJKR97bABytdCH6c&scope=
+
+RESPONSE: [2015-08-04T11:35:34+08:00]
+HTTP/1.1 200 OK
+Content-Length: 2065
+Access-Control-Allow-Origin: *
+Cache-Control: no-cache
+Cache-Control: no-store
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Cache-Control: no-store
+Content-Type: application/json;charset=UTF-8
+Date: Tue, 04 Aug 2015 03:35:34 GMT
+Expires: Thu, 01 Jan 1970 00:00:00 GMT
+Expires: 0
+Pragma: no-cache
+Pragma: no-cache
+Pragma: no-cache
+Server: Apache-Coyote/1.1
+X-Cf-Requestid: 91be5814-6f3f-4c7a-7537-8facac55260f
+X-Cf-Requestid: 59d824cb-a207-4027-6269-70a1868551a2
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Frame-Options: DENY
+X-Xss-Protection: 1; mode=block
+
+{"access_token":"[PRIVATE DATA HIDDEN]","token_type":"bearer","refresh_token":"[PRIVATE DATA HIDDEN]","expires_in":599,"scope":"scim.read cloud_controller.admin password.write scim.write openid cloud_controller.write cloud_controller.read","jti":"488f24de-e20a-410d-b524-96d014bd5238"}
+
+REQUEST: [2015-08-04T11:35:34+08:00]
+GET /v2/organizations HTTP/1.1
+Host: api.192.168.1.145.xip.io
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Content-Type: application/json
+User-Agent: go-cli 6.12.2-24abed3 / linux
+
+
+
+RESPONSE: [2015-08-04T11:35:34+08:00]
+HTTP/1.1 401 Unauthorized
+Content-Length: 97
+Content-Type: application/json;charset=utf-8
+Date: Tue, 04 Aug 2015 03:35:34 GMT
+Server: nginx
+X-Cf-Requestid: 70b0c727-e390-44ff-5ffd-9e0acfb33099
+X-Content-Type-Options: nosniff
+X-Vcap-Request-Id: bc7c9298-3c34-4fe0-6fb7-8910aefbf77b::d087989d-c965-4176-9f33-727ba2a01a76
+
+{
+  "code": 1000,
+  "description": "Invalid Auth Token",
+  "error_code": "CF-InvalidAuthToken"
+}
+
+FAILED
+Error finding available orgs
+Invalid auth token: Invalid Auth Token
+FAILED
+Error finding available orgs
+Invalid auth token: Invalid Auth Token
+
+                   
+API endpoint:   http://api.192.168.1.145.xip.io (API version: 2.33.0)   
+User:           admin   
+No org or space targeted, use 'cf target -o ORG -s SPACE'
